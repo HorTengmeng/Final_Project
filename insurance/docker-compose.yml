@@ -1,0 +1,15 @@
+services:
+  postgres:
+    container_name: finalproject
+    image: postgres:17.5
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: insurance
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
