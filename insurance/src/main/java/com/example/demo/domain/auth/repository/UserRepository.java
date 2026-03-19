@@ -1,11 +1,14 @@
 package com.example.demo.domain.auth.repository;
 
-import com.example.demo.domain.auth.model.User;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
+
+import com.example.demo.domain.auth.model.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User,Long> {
+public interface UserRepository extends JpaRepository<User,UUID> {
     Optional<User> findByEmail(String Email);
 }

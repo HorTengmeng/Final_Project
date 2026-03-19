@@ -3,15 +3,13 @@ package com.example.demo.domain.auth.service;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import com.example.demo.domain.auth.model.User;
-
 import org.springframework.stereotype.Service;
 
 import com.example.demo.domain.auth.dto.AuthResponse;
 import com.example.demo.domain.auth.dto.LoginRequest;
 import com.example.demo.domain.auth.dto.RegisterRequest;
 import com.example.demo.domain.auth.model.Role;
+import com.example.demo.domain.auth.model.User;
 import com.example.demo.domain.auth.repository.UserRepository;
 import com.example.demo.security.JwtService;
 
@@ -26,19 +24,23 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public AuthResponse register(RegisterRequest request){
+    public AuthResponse register(RegisterRequest request) {
 
-        if(userRepository.findByEmail(request.getEmail()).isPresent()){
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
-        User user;
-        user = User.builder()
-                .name(request.getName())
+
+        String fullName = request.getFirstName() + " " + request.getLastName(); // ✅
+
+        User user = User.builder()
+                .fullName(fullName)
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .phone(request.getPhone())
                 .role(Role.USER)
                 .build();
-  userRepository.save(user);
+
+        userRepository.save(user);
 
         String token = jwtService.generateToken(user);
 
