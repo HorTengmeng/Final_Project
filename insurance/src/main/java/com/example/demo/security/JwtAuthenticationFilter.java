@@ -25,11 +25,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException, java.io.IOException {
+            FilterChain filterChain) throws ServletException, IOException, java.io.IOException {
 
-        // STEP 1: Get Authorization header
+        // 1. ADD THIS BYPASS LOGIC FIRST
+        final String path = request.getServletPath();
+        if (path.startsWith("/api/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 2. NOW CONTINUE WITH THE REST OF YOUR LOGIC
         final String authHeader = request.getHeader("Authorization");
+        // ... rest of your code ...
 
         // STEP 2: Check if token exists
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -54,17 +61,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtService.isTokenValid(jwt, userDetails)) {
 
                 // Create authentication object
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,                           // no credentials needed
-                                userDetails.getAuthorities()   // roles/permissions
-                        );
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null, // no credentials needed
+                        userDetails.getAuthorities() // roles/permissions
+                );
 
                 // Add request details to auth object
                 authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                        new WebAuthenticationDetailsSource().buildDetails(request));
 
                 // ================================
                 // STEP 6: Set user as authenticated
