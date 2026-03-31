@@ -12,5 +12,6 @@ public interface InsurancePlanService {
     List<InsurancePlanResponse> getActivePlans();                     // ALL
     InsurancePlanResponse getPlanById(UUID id);                       // ALL
     InsurancePlanResponse updatePlan(UUID id, InsurancePlanRequest request); // ADMIN
-    void deletePlan(UUID id);  
+    void deletePlan(UUID id);
+    InsurancePlanResponse activatePlan(UUID id);
 }

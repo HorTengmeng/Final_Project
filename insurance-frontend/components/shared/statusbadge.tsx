@@ -14,6 +14,8 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
     REJECTED:  "bg-red-100 text-red-800",
     PAID:      "bg-green-100 text-green-800",
     FAILED:    "bg-red-100 text-red-800",
+    ADMIN:     "bg-blue-100 text-blue-800",  
+    USER:      "bg-gray-100 text-gray-700",  
   };
 
   return (

@@ -46,6 +46,7 @@ public class SecurityConfig {
                 // Allow these paths without any token
                 .requestMatchers("/api/auth/**").permitAll() 
                 .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/api/plans/active").permitAll()
                 // All other requests require a token
                 .anyRequest().authenticated()
             )

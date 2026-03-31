@@ -49,9 +49,16 @@ public class InsurancePlanServiceImpl implements InsurancePlanService {
                 .collect(Collectors.toList());
     }
 
-    // ================================
+    @Override
+    public InsurancePlanResponse activatePlan(UUID id) {
+        InsurancePlan plan = planRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+        plan.setIsActive(true);
+        InsurancePlan updated = planRepository.save(plan);
+        return mapToResponse(updated);
+    }
+
     // GET ACTIVE ONLY
-    // ================================
     @Override
     public List<InsurancePlanResponse> getActivePlans() {
         return planRepository.findByIsActiveTrue()

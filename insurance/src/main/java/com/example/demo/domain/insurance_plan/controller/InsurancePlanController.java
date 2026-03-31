@@ -40,6 +40,13 @@ public class InsurancePlanController {
         return ResponseEntity.ok(planService.getAllPlans());
     }
 
+    // Activate plan
+    @PutMapping("/{id}/activate")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<InsurancePlanResponse> activatePlan(@PathVariable UUID id) {
+        return ResponseEntity.ok(planService.activatePlan(id));
+    }
+
     @GetMapping("/active")
     public ResponseEntity<List<InsurancePlanResponse>> getActivePlans() {
         return ResponseEntity.ok(planService.getActivePlans());
