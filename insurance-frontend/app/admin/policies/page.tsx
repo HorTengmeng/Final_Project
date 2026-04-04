@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { getToken, decodeToken } from "@/lib/auth";
-
+import DeleteButton from "@/components/shared/deletebutton";
 import { Policy } from "@/app/types";
 import Navbar from "@/components/shared/navbar";
 import StatusBadge from "@/components/shared/statusbadge";
@@ -156,13 +156,22 @@ export default function AdminPoliciesPage() {
                     <StatusBadge status={policy.status} />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleOpenReview(policy)}
-                    >
-                      Review
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenReview(policy)}
+                      >
+                        Review
+                      </Button>
+                      <DeleteButton
+                        itemName={`${policy.userFullName}'s policy`}
+                        onDelete={async () => {
+                          await api.delete(`/api/policies/${policy.id}`);
+                          fetchPolicies();
+                        }}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -173,49 +182,87 @@ export default function AdminPoliciesPage() {
 
       {/* Review Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Review Policy</DialogTitle>
+            <DialogTitle>Review Application Details</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            {/* Policy Info */}
-            <div
-              className="bg-gray-50 rounded-lg p-3 space-y-1
-              text-sm"
-            >
-              <p>
-                <span className="font-medium">User:</span>{" "}
-                {selected?.userFullName}
-              </p>
-              <p>
-                <span className="font-medium">Plan:</span> {selected?.planName}
-              </p>
-              <p>
-                <span className="font-medium">Period:</span>{" "}
-                {selected?.startDate} → {selected?.endDate}
-              </p>
+            {/* NEW: USER SUBMITTED DATA SECTION */}
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 space-y-3 text-sm">
+              <h3 className="font-bold text-blue-900 border-b border-blue-200 pb-1">
+                Submitted Information
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p className="text-gray-500 text-xs">Date of Birth</p>
+                  <p className="font-medium">{selected?.dateOfBirth || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs">Occupation</p>
+                  <p className="font-medium">{selected?.occupation || "N/A"}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-gray-500 text-xs">Address</p>
+                  <p className="font-medium">{selected?.address || "N/A"}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-gray-500 text-xs">Medical History</p>
+                  <p className="font-medium italic text-gray-700">
+                    {selected?.medicalHistory || "No history provided"}
+                  </p>
+                </div>
+                {selected?.beneficiaryName && (
+                  <div className="col-span-2 pt-2 border-t border-blue-100">
+                    <p className="text-gray-500 text-xs">Beneficiary</p>
+                    <p className="font-medium">
+                      {selected.beneficiaryName} ({selected.beneficiaryRelationship})
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* NEW: VIEW DOCUMENT BUTTON */}
+              {selected?.documentUrl && (
+                <div className="pt-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full bg-white"
+                    onClick={() => window.open(`http://localhost:8080${selected.documentUrl}`, "_blank")}
+                  >
+                    View Attached Document/ID
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <Label>Update Status</Label>
+            {/* Original Plan Info */}
+            <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm border">
+               <p><span className="font-medium text-gray-500">Plan:</span> {selected?.planName}</p>
+               <p><span className="font-medium text-gray-500">Requested Period:</span> {selected?.startDate} → {selected?.endDate}</p>
+            </div>
+
+            {/* Update Status Form */}
+            <div className="space-y-2 pt-2">
+              <Label>Decision</Label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  <SelectItem value="PENDING">Pending (Under Review)</SelectItem>
+                  <SelectItem value="ACTIVE">Approve (Active)</SelectItem>
+                  <SelectItem value="CANCELLED">Reject (Cancelled)</SelectItem>
                   <SelectItem value="EXPIRED">Expired</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Admin Note</Label>
+              <Label>Admin Note (Visible to User)</Label>
               <Textarea
-                placeholder="Add a note..."
+                placeholder="Reason for approval/rejection..."
                 value={adminNote}
                 onChange={(e) => setAdminNote(e.target.value)}
               />
@@ -224,10 +271,10 @@ export default function AdminPoliciesPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              Close
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Update"}
+            <Button onClick={handleSave} disabled={saving} className="bg-blue-600">
+              {saving ? "Saving..." : "Save Review"}
             </Button>
           </DialogFooter>
         </DialogContent>

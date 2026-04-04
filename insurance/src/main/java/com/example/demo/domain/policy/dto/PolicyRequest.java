@@ -6,5 +6,15 @@ import lombok.Data;
 
 @Data
 public class PolicyRequest {
-    private UUID planId; // user just picks which plan they want
+    private UUID planId;
+    private String address;
+    private String dateOfBirth;
+    private String occupation;
+    private String medicalHistory;
+    private String beneficiaryName;
+    private String beneficiaryRelationship;
+    public void setDocumentUrl(String documentUrl) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setDocumentUrl'");
+    } 
 }

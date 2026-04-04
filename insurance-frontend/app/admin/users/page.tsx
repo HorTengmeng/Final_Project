@@ -9,20 +9,29 @@ import StatusBadge from "@/components/shared/statusbadge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import DeleteButton from "@/components/shared/deletebutton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card, CardContent, CardHeader, CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog, DialogContent, DialogHeader,
-  DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Table, TableBody, TableCell,
-  TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Select, SelectContent, SelectItem,
-  SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Search, UserCog } from "lucide-react";
 
@@ -39,10 +48,14 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) { router.push("/auth/login"); return; }
+    if (!token) {
+      router.push("/auth/login");
+      return;
+    }
     const payload = decodeToken(token);
     if (!payload || payload.role !== "ADMIN") {
-      router.push("/auth/login"); return;
+      router.push("/auth/login");
+      return;
     }
     fetchUsers();
   }, [router]);
@@ -59,8 +72,8 @@ export default function AdminUsersPage() {
         (u) =>
           u.fullName.toLowerCase().includes(q) ||
           u.email.toLowerCase().includes(q) ||
-          (u.phone && u.phone.includes(q))
-      )
+          (u.phone && u.phone.includes(q)),
+      ),
     );
   }, [search, users]);
 
@@ -98,20 +111,18 @@ export default function AdminUsersPage() {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">Loading...</p>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
 
   return (
     <div className="p-8 space-y-6">
-
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          User Management
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
         <p className="text-gray-500 mt-1">
           Manage all registered users and their roles
         </p>
@@ -150,8 +161,10 @@ export default function AdminUsersPage() {
             <CardTitle>All Users</CardTitle>
             {/* Search */}
             <div className="relative w-72">
-              <Search className="absolute left-3 top-1/2
-                -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search
+                className="absolute left-3 top-1/2
+                -translate-y-1/2 w-4 h-4 text-gray-400"
+              />
               <Input
                 placeholder="Search by name, email, phone..."
                 className="pl-9"
@@ -176,34 +189,31 @@ export default function AdminUsersPage() {
             <TableBody>
               {filtered.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">
-                    {user.fullName}
-                  </TableCell>
+                  <TableCell className="font-medium">{user.fullName}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    {user.phone || (
-                      <span className="text-gray-400">—</span>
-                    )}
+                    {user.phone || <span className="text-gray-400">—</span>}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={user.role} />
                   </TableCell>
                   <TableCell>
-                    {new Date(user.createdAt)
-                      .toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                    {new Date(user.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleOpenEdit(user)}>
-                      <UserCog className="w-3 h-3 mr-1" />
-                      Edit Role
-                    </Button>
+                    <div className="flex gap-2">
+                      <DeleteButton
+                        itemName={`user "${user.fullName}"`}
+                        onDelete={async () => {
+                          await api.delete(`/api/users/${user.id}`);
+                          fetchUsers();
+                        }}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -211,9 +221,7 @@ export default function AdminUsersPage() {
           </Table>
 
           {filtered.length === 0 && (
-            <p className="text-center text-gray-400 py-8">
-              No users found
-            </p>
+            <p className="text-center text-gray-400 py-8">No users found</p>
           )}
         </CardContent>
       </Card>
@@ -229,8 +237,10 @@ export default function AdminUsersPage() {
             {/* User Info */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full
-                  bg-blue-100 flex items-center justify-center">
+                <div
+                  className="w-10 h-10 rounded-full
+                  bg-blue-100 flex items-center justify-center"
+                >
                   <span className="text-blue-600 font-bold">
                     {selected?.fullName.charAt(0).toUpperCase()}
                   </span>
@@ -239,18 +249,14 @@ export default function AdminUsersPage() {
                   <p className="font-medium text-gray-900">
                     {selected?.fullName}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    {selected?.email}
-                  </p>
+                  <p className="text-sm text-gray-500">{selected?.email}</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select
-                value={newRole}
-                onValueChange={setNewRole}>
+              <Select value={newRole} onValueChange={setNewRole}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -258,31 +264,26 @@ export default function AdminUsersPage() {
                   <SelectItem value="USER">
                     👤 User — Standard access
                   </SelectItem>
-                  <SelectItem value="ADMIN">
-                    🛡️ Admin — Full access
-                  </SelectItem>
+                  <SelectItem value="ADMIN">Admin — Full access</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {newRole === "ADMIN" && (
-              <p className="text-xs text-orange-500 bg-orange-50
-                p-2 rounded">
-                ⚠️ This user will have full admin access
-                to the system!
+              <p
+                className="text-xs text-orange-500 bg-orange-50
+                p-2 rounded"
+              >
+                This user will have full admin access to the system!
               </p>
             )}
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSaveRole}
-              disabled={saving}>
+            <Button onClick={handleSaveRole} disabled={saving}>
               {saving ? "Saving..." : "Update Role"}
             </Button>
           </DialogFooter>

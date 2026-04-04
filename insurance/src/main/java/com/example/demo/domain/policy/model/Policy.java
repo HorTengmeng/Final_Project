@@ -31,12 +31,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Policy {
-    @Id
+ @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name="user_id",nullable = false)
+    @JoinColumn(name="user_id", nullable = false)
     private User user;
 
     @ManyToOne
@@ -50,8 +50,20 @@ public class Policy {
     private LocalDate startDate;
     private LocalDate endDate;
 
-    private String adminNote;
+    private String address;
+    private String dateOfBirth;
+    private String occupation;
+    
+    
+    @Column(columnDefinition = "TEXT")
+    private String medicalHistory;
+    
 
+    private String beneficiaryName;
+    private String beneficiaryRelationship;
+
+    private String adminNote;
+    private String documentUrl;
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

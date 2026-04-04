@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -47,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll() 
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/api/plans/active").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ADMIN")
                 // All other requests require a token
                 .anyRequest().authenticated()
             )

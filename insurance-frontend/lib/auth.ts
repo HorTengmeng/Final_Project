@@ -7,11 +7,12 @@ export function getToken(): string | null {
 
 export function setToken(token: string): void {
   if (typeof window === "undefined") return;
-  // Save to localStorage (for API calls)
+  
   localStorage.setItem("token", token);
-  // Save to cookie (for middleware to read)
-  document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24}`;
-  //                                                   ↑ 24 hours
+  
+  // Clean up the template literal to ensure it's a valid string
+  const maxAge = 60 * 60 * 24; // 24 hours
+  document.cookie = `token=${token}; path=/; max-age=${maxAge}; SameSite=Lax`;
 }
 
 export function removeToken(): void {

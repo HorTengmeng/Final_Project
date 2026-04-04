@@ -1,12 +1,15 @@
 package com.example.demo.domain.payment.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +25,7 @@ import com.example.demo.domain.auth.model.User;
 import com.example.demo.domain.payment.dto.PaymentConfirmRequest;
 import com.example.demo.domain.payment.dto.PaymentRequest;
 import com.example.demo.domain.payment.dto.PaymentResponse;
+import com.example.demo.domain.payment.repository.PaymentRepository;
 import com.example.demo.domain.payment.service.PaymentService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +37,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final FileStorageService fileStorageService;
+    private final PaymentRepository paymentRepository;
 
     // USER makes payment
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -86,5 +91,15 @@ public class PaymentController {
             @RequestBody PaymentConfirmRequest request) {
         return ResponseEntity.ok(
                 paymentService.confirmPayment(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Map<String, String>> deletePayment(
+            @PathVariable UUID id) {
+        paymentRepository.deleteById(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Payment deleted successfully");
+        return ResponseEntity.ok(response);
     }
 }

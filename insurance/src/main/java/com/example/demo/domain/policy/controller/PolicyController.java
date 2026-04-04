@@ -1,10 +1,14 @@
 package com.example.demo.domain.policy.controller;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +22,7 @@ import com.example.demo.domain.auth.model.User;
 import com.example.demo.domain.policy.dto.AdminNoteRequest;
 import com.example.demo.domain.policy.dto.PolicyRequest;
 import com.example.demo.domain.policy.dto.PolicyResponse;
+import com.example.demo.domain.policy.repository.PolicyRepository;
 import com.example.demo.domain.policy.service.PolicyService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,15 +33,19 @@ import lombok.RequiredArgsConstructor;
 public class PolicyController {
 
     private final PolicyService policyService;
+    private final PolicyRepository policyRepository;
 
     // USER applies for a plan
+    // USER applies for a plan (Updated to JSON)
     @PostMapping("/apply")
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<PolicyResponse> applyPolicy(
             @AuthenticationPrincipal User currentUser,
-            @RequestBody PolicyRequest request) {
+            @RequestBody PolicyRequest request) { // Use @RequestBody for JSON
+
+        // We no longer handle MultipartFile here
         return ResponseEntity.ok(
-            policyService.applyPolicy(currentUser.getId(), request));
+                policyService.applyPolicy(currentUser.getId(), request));
     }
 
     // USER views their own policies
@@ -45,7 +54,7 @@ public class PolicyController {
     public ResponseEntity<List<PolicyResponse>> getMyPolicies(
             @AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(
-            policyService.getMyPolicies(currentUser.getId()));
+                policyService.getMyPolicies(currentUser.getId()));
     }
 
     // ADMIN views all policies
@@ -79,6 +88,16 @@ public class PolicyController {
             @PathVariable UUID id,
             @AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(
-            policyService.cancelPolicy(id, currentUser.getId()));
+                policyService.cancelPolicy(id, currentUser.getId()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Map<String, String>> deletePolicy(
+            @PathVariable UUID id) {
+        policyRepository.deleteById(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Policy deleted successfully");
+        return ResponseEntity.ok(response);
     }
 }

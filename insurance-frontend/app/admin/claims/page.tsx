@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import DeleteButton from "@/components/shared/deletebutton";
 import {
   Dialog,
   DialogContent,
@@ -154,13 +155,22 @@ export default function AdminClaimsPage() {
                     <StatusBadge status={claim.status} />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleOpenReview(claim)}
-                    >
-                      Review
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenReview(claim)}
+                      >
+                        Review
+                      </Button>
+                      <DeleteButton
+                        itemName={`${claim.userFullName}'s claim`}
+                        onDelete={async () => {
+                          await api.delete(`/api/claims/${claim.id}`);
+                          fetchClaims();
+                        }}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

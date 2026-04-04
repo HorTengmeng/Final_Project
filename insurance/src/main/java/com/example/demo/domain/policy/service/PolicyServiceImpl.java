@@ -28,53 +28,41 @@ public class PolicyServiceImpl implements PolicyService {
     private final UserRepository userRepository;
     private final InsurancePlanRepository planRepository;
 
-    // ================================
     // USER APPLIES FOR A PLAN
-    // ================================
     @Override
     public PolicyResponse applyPolicy(UUID userId, PolicyRequest request) {
-
-        // 1. Find user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2. Find plan
         InsurancePlan plan = planRepository.findById(request.getPlanId())
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
-        // 3. Check plan is active
-        if (!plan.getIsActive()) {
-            throw new RuntimeException("Plan is not available");
+        // Prevent duplicate pending applications
+        if (policyRepository.existsByUserIdAndPlanIdAndStatus(userId, plan.getId(), PolicyStatus.PENDING)) {
+            throw new RuntimeException("You already have a pending application for this plan");
         }
 
-        // 4. Check user doesn't already have active policy for same plan
-        boolean alreadyExists = policyRepository.existsByUserIdAndPlanIdAndStatus(
-                userId, plan.getId(), PolicyStatus.PENDING)
-                ||
-                policyRepository.existsByUserIdAndPlanIdAndStatus(
-                        userId, plan.getId(), PolicyStatus.ACTIVE);
-
-        if (alreadyExists) {
-            throw new RuntimeException(
-                    "You already have a pending or active policy for this plan");
-        }
-
-        // 5. Create policy
-        Policy policy = Policy.builder()
-                .user(user)
-                .plan(plan)
-                .status(PolicyStatus.PENDING) // always starts as PENDING
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusMonths(plan.getDurationMonths()))
-                .build();
+    Policy policy = Policy.builder()
+        .user(user)
+        .plan(plan)
+        .status(PolicyStatus.PENDING)
+        .startDate(LocalDate.now())
+        .endDate(LocalDate.now()
+            .plusMonths(plan.getDurationMonths()))
+        .dateOfBirth(request.getDateOfBirth())    // ← ADD
+        .address(request.getAddress())             // ← ADD
+        .occupation(request.getOccupation())       // ← ADD
+        .medicalHistory(request.getMedicalHistory()) // ← ADD
+        .beneficiaryName(request.getBeneficiaryName()) // ← ADD
+        .beneficiaryRelationship(                  // ← ADD
+            request.getBeneficiaryRelationship())
+        .build();
 
         Policy saved = policyRepository.save(policy);
         return mapToResponse(saved);
     }
 
-    // ================================
     // USER VIEWS OWN POLICIES
-    // ================================
     @Override
     public List<PolicyResponse> getMyPolicies(UUID userId) {
         return policyRepository.findByUserId(userId)
@@ -83,9 +71,7 @@ public class PolicyServiceImpl implements PolicyService {
                 .collect(Collectors.toList());
     }
 
-    // ================================
     // ADMIN VIEWS ALL POLICIES
-    // ================================
     @Override
     public List<PolicyResponse> getAllPolicies() {
         return policyRepository.findAll()
@@ -94,9 +80,7 @@ public class PolicyServiceImpl implements PolicyService {
                 .collect(Collectors.toList());
     }
 
-    // ================================
     // ADMIN VIEWS BY STATUS
-    // ================================
     @Override
     public List<PolicyResponse> getPoliciesByStatus(String status) {
         PolicyStatus policyStatus = PolicyStatus.valueOf(status.toUpperCase());
@@ -106,9 +90,7 @@ public class PolicyServiceImpl implements PolicyService {
                 .collect(Collectors.toList());
     }
 
-    // ================================
     // ADMIN APPROVES OR REJECTS
-    // ================================
     @Override
     public PolicyResponse updatePolicyStatus(UUID policyId, AdminNoteRequest request) {
         Policy policy = policyRepository.findById(policyId)
@@ -121,9 +103,7 @@ public class PolicyServiceImpl implements PolicyService {
         return mapToResponse(updated);
     }
 
-    // ================================
     // USER CANCELS POLICY
-    // ================================
     @Override
     public PolicyResponse cancelPolicy(UUID policyId, UUID userId) {
         Policy policy = policyRepository.findById(policyId)
@@ -139,9 +119,7 @@ public class PolicyServiceImpl implements PolicyService {
         return mapToResponse(updated);
     }
 
-    // ================================
     // MAPPER
-    // ================================
     private PolicyResponse mapToResponse(Policy policy) {
         return PolicyResponse.builder()
                 .id(policy.getId())
@@ -157,5 +135,4 @@ public class PolicyServiceImpl implements PolicyService {
                 .createdAt(policy.getCreatedAt())
                 .build();
     }
-
 }

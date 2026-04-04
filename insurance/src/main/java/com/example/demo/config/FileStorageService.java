@@ -30,7 +30,7 @@ public class FileStorageService {
     // ================================
     // Store file and return URL
     // ================================
-    public String storeFile(MultipartFile file, String subFolder) {
+    public static String storeFile(MultipartFile file, String subFolder) {
 
         // 1. Validate file is not empty
         if (file.isEmpty()) {

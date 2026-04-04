@@ -15,22 +15,27 @@ export interface Plan {
 }
 
 export interface Policy {
+  monthlyPremium(monthlyPremium: any): string | Blob;
   id: string;
   userId: string;
   userFullName: string;
   planId: string;
-  
-  // These fields come from the JOIN with insurance_plans [cite: 6]
   planName: string;
   planType: string;
   durationMonths: number; // ADD THIS: To show the policy term [cite: 6]
   coverageAmount: number; // ADD THIS: To show total protection value [cite: 6]
-  
   status: string;
   startDate: string; // matches start_date in DB [cite: 6]
   endDate: string;   // matches end_date in DB [cite: 6]
   adminNote: string | null;
   createdAt: string;
+  dateOfBirth?: string;
+  occupation?: string;
+  address?: string;
+  medicalHistory?: string;
+  beneficiaryName?: string;
+  beneficiaryRelationship?: string;
+  documentUrl?: string;
 }
 
 export interface Claim {

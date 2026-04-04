@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { getToken, decodeToken } from "@/lib/auth";
-
 import { Plan } from "@/app/types";
-import Navbar from "@/components/shared/navbar";
-import StatusBadge from "@/components/shared/statusbadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

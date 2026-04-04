@@ -1,13 +1,21 @@
 package com.example.demo.domain.auth.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.HashMap;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.auth.model.Role;
 import com.example.demo.domain.auth.model.User;
@@ -21,6 +29,12 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserRepository userRepository;
+
+    @GetMapping("/me")
+    public ResponseEntity<User> getMyProfile(Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(currentUser);
+    }
 
     // ADMIN — get all users
     @GetMapping
@@ -37,8 +51,7 @@ public class UserController {
             @RequestBody Map<String, String> request) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                    new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         user.setRole(Role.valueOf(request.get("role")));
         userRepository.save(user);
@@ -46,5 +59,28 @@ public class UserController {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Role updated successfully");
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable UUID id) {
+        Map<String, String> response = new HashMap<>();
+
+        // 1. Check if user exists to avoid EmptyResultDataAccessException
+        if (!userRepository.existsById(id)) {
+            response.put("message", "User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        try {
+            userRepository.deleteById(id);
+            response.put("message", "User deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // 2. Catch Foreign Key constraints or other DB issues
+            response.put("message",
+                    "Cannot delete user: They may have active insurance policies or records linked to them.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 }

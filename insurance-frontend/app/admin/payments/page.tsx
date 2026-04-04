@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { getToken, decodeToken } from "@/lib/auth";
-
+import DeleteButton from "@/components/shared/deletebutton";
 import { Payment } from "@/app/types";
 import Navbar from "@/components/shared/navbar";
 import StatusBadge from "@/components/shared/statusbadge";
@@ -175,15 +175,24 @@ export default function AdminPaymentsPage() {
                     <StatusBadge status={payment.status} />
                   </TableCell>
                   <TableCell>
-                    {payment.status === "PENDING" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleOpenConfirm(payment)}
-                      >
-                        Confirm
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {payment.status === "PENDING" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenConfirm(payment)}
+                        >
+                          Confirm
+                        </Button>
+                      )}
+                      <DeleteButton
+                        itemName={`${payment.userFullName}'s payment`}
+                        onDelete={async () => {
+                          await api.delete(`/api/payments/${payment.id}`);
+                          fetchPayments();
+                        }}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
